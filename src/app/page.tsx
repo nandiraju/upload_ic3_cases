@@ -202,10 +202,10 @@ export default function Home() {
                   <div className="p-1.5 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
                     <Stethoscope className="w-4 h-4 text-cyan-600" />
                   </div>
-                  <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-cyan-600/60">Molecular Synthesis Portal</span>
+                  <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-cyan-600/60">Intelligence Document Synthesis</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-none">
-                  Onco<span className="text-cyan-600">Stream</span>
+                <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-none">
+                  IC3 Document<span className="text-cyan-600"> Parser</span>
                 </h1>
               </div>
             </div>

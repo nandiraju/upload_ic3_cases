@@ -42,6 +42,3 @@ next-env.d.ts
 
 # patient cases
 mohan_usecase/
-
-# laboratory resources (large pdfs)
-public/tests/
