@@ -2,30 +2,52 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+export interface DocumentResult {
+  fileName: string
+  documentType?: string
+  patientName?: string
+  patientAge?: string
+  patientGender?: string
+  referredBy?: string
+  reportDate?: string
+  clinicalFindings?: string | string[]
+  diagnosis?: string
+  biomarkers?: string | string[]
+  treatmentDetails?: string
+  confidenceScore?: number
+  originalFile?: { name: string, type: string, data: string, storageId?: string }
+  error?: string
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
-export async function processMedicalDocuments(files: { name: string, type: string, data: string }[]) {
+export async function processMedicalDocuments(files: { name: string, type: string, data: string }[]): Promise<DocumentResult[] | { globalError: string }> {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     const results = await Promise.all(
       files.map(async (file) => {
         const prompt = `
-          You are a world-class oncology data scientist and clinical analyst. 
-          Analyze this SPECIFIC document (could be a handwritten note, camera-captured image, or digital PDF).
-          Perform high-precision OCR and extract all clinical information found ONLY in this document.
-
-          Return a valid JSON object with these fields:
-          - fileName: "${file.name}"
-          - documentType: (e.g., 'Biopsy Report', 'Handwritten Physician Note', 'CT Scan Result', 'Discharge Summary')
-          - patientName: Full name if found
-          - clinicalFindings: A detailed bulleted list of extracted findings
-          - diagnosis: Specific diagnosis mentioned in this file
-          - biomarkers: List any genetic markers or biomarkers found
-          - treatmentDetails: Any medications, surgeries, or therapies mentioned
-          - confidenceScore: Your level of certainty (0.0 - 1.0)
+          You are a world-class specialized oncology diagnostic extraction engine using high-precision OCR. 
+          Analyze this clinical document (Physician Note / Lab Report / Imaging Result).
           
-          Important: ONLY return the JSON object. No preamble.
+          PERFORM DEEP OCR AND EXTRACT THE FOLLOWING FIELDS PRECISELY:
+          - fileName: "${file.name}"
+          - documentType: Specific clinical category
+          - patientName: Full name (e.g., 'Mrs. MANDA KANDURWAR')
+          - patientAge: Extracted age (e.g., '66 Y(s)')
+          - patientGender: Extracted gender (e.g., 'Female')
+          - referredBy: Clinical specialist/doctor name
+          - reportDate: Date of the report generation
+          - clinicalFindings: Detailed bulleted list of all medical/pathological observations
+          - diagnosis: Definitive diagnosis or impression
+          - biomarkers: Direct extraction of all genomic findings (e.g., ER/PR, HER2, EGFR)
+          - treatmentDetails: Surgical procedures, drugs, or therapeutic plans mentioned
+          - confidenceScore: Scale 0.0 to 1.0
+          
+          CRITICAL: Locate the header block for Demographics (Name, Age, Gender, Referral). 
+          These are often on the top left/right of clinical reports.
+          ONLY return valid JSON. Do not include markdown code blocks or preamble.
         `
 
         const part = {
