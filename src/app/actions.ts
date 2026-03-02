@@ -14,6 +14,7 @@ export interface DocumentResult {
   diagnosis?: string
   biomarkers?: string | string[]
   treatmentDetails?: string
+  timelineEvents?: { date: string, event: string, type?: string }[]
   confidenceScore?: number
   originalFile?: { name: string, type: string, data: string, storageId?: string }
   error?: string
@@ -43,10 +44,14 @@ export async function processMedicalDocuments(files: { name: string, type: strin
           - diagnosis: Definitive diagnosis or impression
           - biomarkers: Direct extraction of all genomic findings (e.g., ER/PR, HER2, EGFR)
           - treatmentDetails: Surgical procedures, drugs, or therapeutic plans mentioned
+          - timelineEvents: A list of chronologically relevant events found IN THE CONTENT of the document. Each event MUST have:
+            - date: The date of the event as mentioned in the text (e.g., '2024-01-15', 'October 2023').
+            - event: A short description of what happened (e.g., 'Left mastectomy', 'Treatment initiated', 'Biopsy performed').
+            - type: One of ['diagnosis', 'treatment', 'test', 'observation'].
           - confidenceScore: Scale 0.0 to 1.0
           
-          CRITICAL: Locate the header block for Demographics (Name, Age, Gender, Referral). 
-          These are often on the top left/right of clinical reports.
+          CRITICAL: Provide dates as mentioned in the clinical history or report findings. 
+          Do not use today's date unless it specifically refers to the report generation date being an event.
           ONLY return valid JSON. Do not include markdown code blocks or preamble.
         `
 

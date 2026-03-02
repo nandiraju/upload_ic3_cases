@@ -32,7 +32,9 @@ import {
   Search,
   Sparkles,
   Info,
-  ChevronDown
+  ChevronDown,
+  Calendar,
+  CircleDot
 } from 'lucide-react'
 
 interface DocumentResult {
@@ -47,6 +49,7 @@ interface DocumentResult {
   diagnosis?: string
   biomarkers?: string | string[]
   treatmentDetails?: string
+  timelineEvents?: { date: string, event: string, type?: string }[]
   confidenceScore?: number
   originalFile?: { name: string, type: string, data: string, storageId?: string }
   error?: string
@@ -368,6 +371,79 @@ export default function Home() {
                      </div>
                   </motion.div>
                )}
+            </div>
+
+            <div className="space-y-12">
+               <h3 className="text-xl font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-4">
+                  <div className="h-px bg-slate-200 flex-grow" />
+                  Clinical Journey Timeline
+                  <div className="h-px bg-slate-200 flex-grow" />
+               </h3>
+
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 bg-white border border-slate-200 rounded-[3rem] p-12 md:p-16 shadow-[0_20px_60px_rgba(0,0,0,0.03)] overflow-hidden relative">
+                  <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12">
+                     <History className="w-64 h-64 text-cyan-600" />
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-6">
+                     <div className="inline-flex items-center gap-3 px-4 py-2 bg-cyan-50 rounded-2xl border border-cyan-100 mb-2">
+                        <Calendar className="w-5 h-5 text-cyan-600" />
+                        <span className="text-xs font-black text-cyan-700 uppercase tracking-widest">Temporal Synthesis</span>
+                     </div>
+                     <h4 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">Longitudinal Patient Trajectory</h4>
+                     <p className="text-slate-500 font-medium leading-relaxed">
+                        A consolidated chronological view of diagnostic and therapeutic events extracted directly from the uploaded clinical documentation history.
+                     </p>
+                  </div>
+
+                  <div className="lg:col-span-8 relative">
+                     <div className="absolute left-[11px] top-6 bottom-6 w-0.5 bg-slate-100" />
+                     
+                     <div className="space-y-12 relative">
+                        {(() => {
+                          const allEvents = results.flatMap(r => r.timelineEvents || []);
+                          // Simple date sort - might need more robust parsing for diverse formats
+                          const sortedEvents = allEvents.sort((a, b) => {
+                             const dateA = new Date(a.date).getTime();
+                             const dateB = new Date(b.date).getTime();
+                             if (isNaN(dateA)) return 1;
+                             if (isNaN(dateB)) return -1;
+                             return dateA - dateB;
+                          });
+
+                          return sortedEvents.length > 0 ? sortedEvents.map((evt, idx) => (
+                             <div key={idx} className="flex gap-8 group">
+                                <div className="relative z-10">
+                                   <div className={`w-6 h-6 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-transform group-hover:scale-125
+                                      ${evt.type === 'diagnosis' ? 'bg-red-500' : 
+                                        evt.type === 'treatment' ? 'bg-indigo-500' : 
+                                        evt.type === 'test' ? 'bg-cyan-500' : 'bg-slate-400'}`} 
+                                   />
+                                </div>
+                                <div className="space-y-1.5 pb-2">
+                                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">{evt.date}</p>
+                                   <p className="text-base font-bold text-slate-900 leading-snug group-hover:text-cyan-600 transition-colors">{evt.event}</p>
+                                   {evt.type && (
+                                     <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter
+                                        ${evt.type === 'diagnosis' ? 'bg-red-50 text-red-600' : 
+                                          evt.type === 'treatment' ? 'bg-indigo-50 text-indigo-600' : 
+                                          evt.type === 'test' ? 'bg-cyan-50 text-cyan-600' : 'bg-slate-100 text-slate-600'}`}
+                                     >
+                                        {evt.type}
+                                     </span>
+                                   )}
+                                </div>
+                             </div>
+                          )) : (
+                             <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                                <History className="w-12 h-12 mb-4" />
+                                <p className="text-sm font-bold uppercase tracking-widest">No temporal data points identified</p>
+                             </div>
+                          );
+                        })()}
+                     </div>
+                  </div>
+               </div>
             </div>
 
             <div className="space-y-16">
